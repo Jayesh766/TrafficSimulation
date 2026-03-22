@@ -13,5 +13,3 @@ A real-time graphical traffic simulation built using **Java 21** and **JavaFX**.
 * **Build Tool:** Maven
 * **Version Control:** Git & GitHub
 
-## 📸 Preview
-*(Once you run it, take a screenshot and upload it here!)*
