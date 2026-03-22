@@ -5,56 +5,75 @@ import javafx.scene.image.ImageView;
 
 public class car {
     private ImageView imageView;
-    private double speed;
+    private double currentSpeed;
+    private double baseSpeed;
     private String direction;
 
-    public car(double x, double y, String direction) {
+    // UPDATED: Now accepts imagePath so we can spawn sport-cars or motorcycles
+    public car(double x, double y, String direction, String imagePath) {
         this.direction = direction;
 
-        // Load your image
-        Image img = new Image(getClass().getResourceAsStream("/com/example/trafficsimulation/sport-car.png"));
+        // Load image from the provided path
+        Image img = new Image(getClass().getResourceAsStream(imagePath));
         this.imageView = new ImageView(img);
 
         this.imageView.setX(x);
         this.imageView.setY(y);
-        this.imageView.setFitWidth(50); // Adjust size to look good
+
+        // Adjust size: motorcycles are usually smaller than cars
+        if (imagePath.contains("motorcycle")) {
+            this.imageView.setFitWidth(35);
+            this.baseSpeed = 3.5; // Motorcycles are faster!
+        } else {
+            this.imageView.setFitWidth(50);
+            this.baseSpeed = 2.0; // Standard car speed
+        }
+
         this.imageView.setPreserveRatio(true);
-        this.speed = 2.0;
+        this.currentSpeed = baseSpeed;
 
         // Rotate car based on direction
-        if (direction.equals("DOWN")) imageView.setRotate(90);
-        if (direction.equals("UP")) imageView.setRotate(270);
-        if (direction.equals("LEFT")) imageView.setRotate(180);
+        switch (direction) {
+            case "DOWN" -> imageView.setRotate(90);
+            case "UP"   -> imageView.setRotate(270);
+            case "LEFT" -> imageView.setRotate(180);
+            default     -> imageView.setRotate(0); // RIGHT
+        }
     }
 
     public void move(TrafficLights light) {
-        double stopLineX_Right = 300;
-        double stopLineX_Left = 450;
-        double stopLineY_Down = 100;
-        double stopLineY_Up = 250;
+        // Define stop coordinates for the 4-way intersection
+        double stopLineX_Right = 290;
+        double stopLineX_Left = 460;
+        double stopLineY_Down = 90;
+        double stopLineY_Up = 260;
 
         boolean shouldStop = false;
 
+        // Only check for stopping if the light is RED
         if (light.getState().equals("RED")) {
-            if (direction.equals("RIGHT") && imageView.getX() > stopLineX_Right - 50 && imageView.getX() < stopLineX_Right) shouldStop = true;
-            if (direction.equals("LEFT") && imageView.getX() < stopLineX_Left + 50 && imageView.getX() > stopLineX_Left) shouldStop = true;
-            if (direction.equals("DOWN") && imageView.getY() > stopLineY_Down - 50 && imageView.getY() < stopLineY_Down) shouldStop = true;
-            if (direction.equals("UP") && imageView.getY() < stopLineY_Up + 50 && imageView.getY() > stopLineY_Up) shouldStop = true;
+            if (direction.equals("RIGHT") && imageView.getX() > stopLineX_Right - 60 && imageView.getX() < stopLineX_Right) shouldStop = true;
+            if (direction.equals("LEFT") && imageView.getX() < stopLineX_Left + 60 && imageView.getX() > stopLineX_Left) shouldStop = true;
+            if (direction.equals("DOWN") && imageView.getY() > stopLineY_Down - 60 && imageView.getY() < stopLineY_Down) shouldStop = true;
+            if (direction.equals("UP") && imageView.getY() < stopLineY_Up + 60 && imageView.getY() > stopLineY_Up) shouldStop = true;
         }
 
-        speed = shouldStop ? 0 : 2.0;
+        // Apply speed based on light status
+        currentSpeed = shouldStop ? 0 : baseSpeed;
 
+        // Execute movement
         switch (direction) {
-            case "RIGHT" -> imageView.setX(imageView.getX() + speed);
-            case "LEFT"  -> imageView.setX(imageView.getX() - speed);
-            case "DOWN"  -> imageView.setY(imageView.getY() + speed);
-            case "UP"    -> imageView.setY(imageView.getY() - speed);
+            case "RIGHT" -> imageView.setX(imageView.getX() + currentSpeed);
+            case "LEFT"  -> imageView.setX(imageView.getX() - currentSpeed);
+            case "DOWN"  -> imageView.setY(imageView.getY() + currentSpeed);
+            case "UP"    -> imageView.setY(imageView.getY() - currentSpeed);
         }
 
-        if (imageView.getX() > 800) imageView.setX(-50);
-        if (imageView.getX() < -50) imageView.setX(800);
-        if (imageView.getY() > 400) imageView.setY(-50);
-        if (imageView.getY() < -50) imageView.setY(400);
+        // Screen Wrap-around (Infinite loop)
+        if (imageView.getX() > 850) imageView.setX(-60);
+        if (imageView.getX() < -60) imageView.setX(850);
+        if (imageView.getY() > 450) imageView.setY(-60);
+        if (imageView.getY() < -60) imageView.setY(450);
     }
 
     public ImageView getShape() { return imageView; }
